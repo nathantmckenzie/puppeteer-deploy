@@ -30,9 +30,6 @@ app.post("/generate-pdf", async (req, res) => {
     // Confirm the executable exists
     const fs = await import("fs");
 
-    fs.writeFileSync("/tmp/test.pdf", pdfBuffer);
-    console.log("PDF saved to /tmp/test.pdf");
-
     console.log("Path exists:", fs.existsSync(path));
 
     // Launch browser
@@ -51,6 +48,9 @@ app.post("/generate-pdf", async (req, res) => {
 
     const pdfBuffer = await page.pdf({ format: "letter", printBackground: true });
     console.log("✅ PDF generated, buffer length:", pdfBuffer.length);
+
+    fs.writeFileSync("/tmp/test.pdf", pdfBuffer);
+    console.log("PDF saved to /tmp/test.pdf");
 
     await browser.close();
     console.log("✅ Browser closed");
