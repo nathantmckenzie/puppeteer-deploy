@@ -1,7 +1,7 @@
-# Use Node 18 slim
+# Use Node 18
 FROM node:18-slim
 
-# Install Chromium and required libraries
+# Install Chromium dependencies
 RUN apt-get update && apt-get install -y \
     chromium \
     ca-certificates \
@@ -28,12 +28,23 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Tell Puppeteer to skip its own Chromium download
+# Tell Puppeteer to use system Chromium
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Set working directory
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy package.json first to leverage Do
+# Copy package.json first to leverage Docker caching
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of your project (including index.js) into /app
+COPY . .
+
+# Start the server
+CMD ["node", "index.js"]
+
 
