@@ -1,40 +1,55 @@
 import express from "express";
 import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import cors from "cors";
-import fs from "fs";
+
+chromium.packed =
+  "https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar";
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// Health check
 app.get("/", (req, res) => {
-  res.send("PDF server is running!");
+  res.send("Hello World!");
 });
 
-// Generate PDF
 app.post("/generate-pdf", async (req, res) => {
   console.log("📥 PDF request received");
 
   try {
     const { htmlContent } = req.body;
-    if (!htmlContent) return res.status(400).json({ error: "Missing HTML" });
+    if (!htmlContent) {
+      console.error("❌ Missing HTML in request");
+      return res.status(400).json({ error: "Missing HTML" });
+    }
 
-    const chromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH;
-    console.log("Chromium exec path:", chromiumPath);
-    console.log("Path exists:", fs.existsSync(chromiumPath));
+    const path = await chromium.executablePath();
+    console.log("Chromium exec path:", path);
 
+    // Confirm the executable exists
+    const fs = await import("fs");
+    console.log("Path exists:", fs.existsSync(path));
+
+    // Launch browser
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      executablePath: chromiumPath,
-      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"].concat(chromium.args),
+      executablePath: path,
+      headless: chromium.headless,
     });
+    console.log("✅ Browser launched");
 
     const page = await browser.newPage();
+    console.log("✅ Page created");
+
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    console.log("✅ HTML content set");
 
     const pdfBuffer = await page.pdf({ format: "letter", printBackground: true });
+    console.log("✅ PDF generated, buffer length:", pdfBuffer.length);
+
     await browser.close();
+    console.log("✅ Browser closed");
 
     res.set({
       "Content-Type": "application/pdf",
@@ -47,6 +62,5 @@ app.post("/generate-pdf", async (req, res) => {
   }
 });
 
-// Use Railway's PORT or fallback
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 PDF server running on port ${PORT}`));
