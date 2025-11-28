@@ -1,7 +1,7 @@
-# Use Node 18 (works well with Puppeteer)
+# Use Node 18 slim
 FROM node:18-slim
 
-# Install Chromium dependencies
+# Install Chromium and required libraries
 RUN apt-get update && apt-get install -y \
     chromium \
     ca-certificates \
@@ -28,16 +28,12 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Set Puppeteer env so it uses system chromium
+# Tell Puppeteer to skip its own Chromium download
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
+# Set working directory
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
 
-COPY . .
-
-# Railway will automatically pick PORT
-CMD ["npm", "start"]
+# Copy package.json first to leverage Do
 
