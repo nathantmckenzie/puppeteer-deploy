@@ -29,6 +29,10 @@ app.post("/generate-pdf", async (req, res) => {
 
     // Confirm the executable exists
     const fs = await import("fs");
+
+    fs.writeFileSync("/tmp/test.pdf", pdfBuffer);
+    console.log("PDF saved to /tmp/test.pdf");
+
     console.log("Path exists:", fs.existsSync(path));
 
     // Launch browser
@@ -51,11 +55,12 @@ app.post("/generate-pdf", async (req, res) => {
     await browser.close();
     console.log("✅ Browser closed");
 
-    res.set({
+    res.writeHead(200, {
       "Content-Type": "application/pdf",
       "Content-Disposition": "attachment; filename=resume.pdf",
+      "Content-Length": pdfBuffer.length,
     });
-    res.send(pdfBuffer);
+    res.end(pdfBuffer);
   } catch (err) {
     console.error("❌ PDF generation error:", err);
     res.status(500).json({ error: "PDF generation failed" });
