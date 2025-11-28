@@ -1,12 +1,18 @@
 import express from "express";
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
+import cors from "cors";
 
 chromium.packed =
   "https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar";
 
 const app = express();
-app.use(express.json({ limit: "5mb" }));
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
+
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 
 app.post("/generate-pdf", async (req, res) => {
   try {
@@ -36,5 +42,5 @@ app.post("/generate-pdf", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => console.log(`PDF server running on port ${PORT}`));
