@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.send("WHAT THE HECKKK");
 });
 
 app.post("/generate-pdf", async (req, res) => {
